@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-void wstrim(char* s);
+char* wstrim(char* s);
 
 void main(int argc, char* argv[]){
 	// printf("\n");
@@ -13,16 +13,15 @@ void main(int argc, char* argv[]){
 		exit(1);
 	}
 	char* str1 = (char*) malloc(sizeof(char) * 100);
-	strcpy(str1, "   this is a string   ");
-	wstrim(str1);
-	printf("bob: %s\n", str1);
+	strcpy(str1, "   this is a string  \n ");
+	str1 = wstrim(str1);
+	printf("bob:\"%s\"\n", str1);
 
 	char* s = (char*) malloc(sizeof(char)*100);
 	size_t size = sizeof(char)*100;
 	while(1){
 		getline(&s, &size, stdin);
-		wstrim(s);
-		printf("%s here", s);
+		s = wstrim(s);
 		if(strcmp(s, "exit") == 0){
 			break;
 		}
@@ -31,12 +30,11 @@ void main(int argc, char* argv[]){
 	exit(0);
 }
 
-void wstrim(char* s){
-	printf("input: %s\n", s);
+char* wstrim(char* s){
 	while(isspace(s[0])){
-		printf("first ws\n");
 		s = &(s[1]);
 	}
 	while(isspace(s[strlen(s)-1]))
 		s[strlen(s)-1] = '\0';
+	return s;
 }
