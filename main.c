@@ -9,17 +9,14 @@ void main(int argc, char* argv[]){
 	// printf("\n");
 
 	if(argc >= 2){
-		printf("shell accepts 0 or 1 argument\n");
+		printf("shell accepts 0 or 1 arguments\n");
 		exit(1);
 	}
-	char* str1 = (char*) malloc(sizeof(char) * 100);
-	strcpy(str1, "   this is a string  \n ");
-	str1 = wstrim(str1);
-	printf("bob:\"%s\"\n", str1);
 
 	char* s = (char*) malloc(sizeof(char)*100);
 	size_t size = sizeof(char)*100;
 	while(1){
+		printf("shell> ");
 		getline(&s, &size, stdin);
 		s = wstrim(s);
 		if(strcmp(s, "exit") == 0){
