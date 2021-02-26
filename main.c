@@ -4,29 +4,44 @@
 #include <ctype.h>
 
 char* wstrim(char* s);
+void error();
 
 void main(int argc, char* argv[]){
 	if(argc >= 3){
-		printf("shell accepts 0 or 1 arguments\n");
-		exit(1);
+		error();
 	}
 
-	FILE* fp = stdin;
+	FILE* inputFile = stdin;
 	if(argc == 2)
-		fp = fopen(argv[1], "r");
+		inputFile = fopen(argv[1], "r");
 
 	char* s = (char*) malloc(sizeof(char)*100);
 	size_t size = sizeof(char)*100;
-	while(!feof(fp)){
+	while(!feof(inputFile)){
 		printf("shell> ");
-		getline(&s, &size, fp);
-		if(feof(fp)){
+		getline(&s, &size, inputFile);
+		if(feof(inputFile)){
 			printf("\n");
 			exit(0);
 		}
+		FILE* outputFile = stdout;
 		s = wstrim(s);
+
+		//built-in commands
 		if(strcmp(s, "exit") == 0){
 			break;
+		}
+		else if(strcmp(s, "cd") == 0){
+
+		}
+		else if(strcmp(s, "path") == 0){
+
+		}
+		else if(strcmp(s, "env") == 0){
+
+		}
+		else {
+
 		}
 	}
 
@@ -41,3 +56,10 @@ char* wstrim(char* s){
 		s[strlen(s)-1] = '\0';
 	return s;
 }
+
+void error(){
+	fprintf(stderr, "An error has occurred\n");
+	exit(1);
+}
+
+// char** split
