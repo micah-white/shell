@@ -12,3 +12,6 @@ test: shell
 
 file: shell
 	./shell $(FILE)
+
+valgrind: shell
+	valgrind ./shell $(FILE)	
