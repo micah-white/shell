@@ -14,11 +14,6 @@ void main(int argc, char* argv[]){
 		error();
 	}
 
-	char* a = malloc(sizeof(char)*100);
-	strcpy(a, "this is a test");
-	substr(a,0,3);
-	printf("%s\n", a);
-
 	FILE* inputFile = stdin;
 	if(argc == 2)
 		inputFile = fopen(argv[1], "r");
@@ -33,6 +28,7 @@ void main(int argc, char* argv[]){
 	while(!feof(inputFile)){
 		printf("shell> ");
 		getline(&s, &size, inputFile);
+		// strcpy(s, "this is a test");
 		if(feof(inputFile)){
 			printf("\n");
 			break;
@@ -69,9 +65,17 @@ void main(int argc, char* argv[]){
 	exit(0);
 }
 
+void shiftDown(char* s){
+	int i = 0;
+	while(s[i] != '\0'){;
+		s[i] = s[i+1];
+		i++;
+	}
+}
+
 char* wstrim(char* s){
 	while(isspace(s[0])){
-		s = &(s[1]);
+		shiftDown(s);
 	}
 	while(isspace(s[strlen(s)-1]))
 		s[strlen(s)-1] = '\0';
@@ -87,11 +91,15 @@ void split(char* str, char** arr, int* c, int s){
 	int index = 0;
 	int count = 0;
 	for(int i = 0; i <= strlen(str); i++){
-		if(i == strlen(str) || str[i] == ' ' || count > s){
+		if(i == strlen(str) || str[i] == ' '){
 			char* sub = wstrim(substr(str, index, i-index));
 			strcpy(arr[count], sub);
+			free(sub);
 			index = i;
 			count++;
+		}
+		else if( count > s){
+			
 		}
 	}
 	if(index != strlen(str)){
@@ -125,3 +133,4 @@ void printArray(char** a, int s){
 		printf("%s\n", a[i]);
 	}
 }
+
