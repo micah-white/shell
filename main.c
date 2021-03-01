@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 char* wstrim(char* s);
 void error();
@@ -25,41 +26,64 @@ void main(int argc, char* argv[]){
 	for(int i = 0; i < numSlots; i++){
 		tokens[i] = (char*) malloc(sizeof(char) * 50);
 	}
+
+	char** paths = malloc(sizeof(char*));
+	paths[0] = malloc(sizeof("/bin"));
+	strcpy(paths[0], "/bin");
+	int numPaths = 1;
+
 	while(!feof(inputFile)){
 		printf("shell> ");
 		getline(&s, &size, inputFile);
-		// strcpy(s, "this is a test");
+		// strcpy(s, "this   is a test  >  hello&hi there>fumd   &");
 		if(feof(inputFile)){
 			printf("\n");
 			break;
 		}
 		FILE* outputFile = stdout;
 		s = wstrim(s);
-		int arrCount;
-		split(s, tokens, &arrCount, numSlots);
-		printArray(tokens, arrCount);
+		int tokenCount;
+		split(s, tokens, &tokenCount, numSlots);
+		printArray(tokens, tokenCount);
 		//built-in commands
-		if(strcmp(s, "exit") == 0){
+		if(strcmp(tokens[0], "exit") == 0){
 			break;
 		}
-		else if(strcmp(s, "cd") == 0){
+		else if(strcmp(tokens[0], "cd") == 0){
 
 		}
-		else if(strcmp(s, "path") == 0){
+		else if(strcmp(tokens[0], "path") == 0){
 
 		}
-		else if(strcmp(s, "env") == 0){
+		else if(strcmp(tokens[0], "env") == 0){
 
 		}
 		else {
-
+			for(int i = 0; i < numPaths; i++){
+				char* filepath = malloc(sizeof(paths[i]) + sizeof(tokens[0]) + 1);
+				strcpy(filepath, paths[i]);
+				strcat(filepath, "/");
+				strcat(filepath, tokens[0]);
+				printf("filepath: %s\n", filepath);
+				if(access(paths[i], X_OK) == 0){
+					
+					free(filepath);
+					break;
+				}
+				free(filepath);	
+			}
 		}
+		// break;
 	}
 
 	free(s);
 	for(int i = 0; i < numSlots; i++)
 		free(tokens[i]);
 	free(tokens);
+	for(int i = 0; i < numPaths; i++){
+		free(paths[i]);
+	}
+	free(paths);
 	if(argc == 2)
 		fclose(inputFile);
 	exit(0);
@@ -97,7 +121,6 @@ void split(char* str, char** arr, int* c, int s){
 			}
 			else{
 				char* sub = wstrim(substr(str, index, i-index));
-				printf("sub: \"%s\"\n", sub);
 				strcpy(arr[count++], sub);
 				free(sub);
 				index = i;

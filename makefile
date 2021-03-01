@@ -14,4 +14,4 @@ file: shell
 	./shell $(FILE)
 
 valgrind: shell
-	valgrind ./shell $(FILE)	
+	valgrind --leak-check=full --show-leak-kinds=all ./shell $(FILE)	
