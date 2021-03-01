@@ -92,14 +92,36 @@ void split(char* str, char** arr, int* c, int s){
 	int count = 0;
 	for(int i = 0; i <= strlen(str); i++){
 		if(i == strlen(str) || str[i] == ' '){
-			char* sub = wstrim(substr(str, index, i-index));
-			strcpy(arr[count], sub);
+			if(i == index+1){
+				index++;
+			}
+			else{
+				char* sub = wstrim(substr(str, index, i-index));
+				printf("sub: \"%s\"\n", sub);
+				strcpy(arr[count++], sub);
+				free(sub);
+				index = i;
+			}
+		}
+		if(str[i] == '&' || str[i] == '>'){
+			char temp[2];
+			temp[0] = str[i];
+			temp[1] = '\0';
+			char* sub = wstrim(substr(str, index, i-index));			
+			if(i == index+1){
+				strcpy(arr[count++], temp);
+				index = ++i;
+			}
+			else{
+				strcpy(arr[count++], sub);
+				strcpy(arr[count++], temp);
+				index = ++i;
+			}
 			free(sub);
-			index = i;
-			count++;
 		}
 		else if( count > s){
-			
+			printf("tried to save more strings than there is space\n");
+			return;
 		}
 	}
 	if(index != strlen(str)){
@@ -130,7 +152,7 @@ char* substr(char* str, int start, int length){
 
 void printArray(char** a, int s){
 	for(int i = 0; i < s; i++){
-		printf("%s\n", a[i]);
+		printf("\"%s\"\n", a[i]);
 	}
 }
 
