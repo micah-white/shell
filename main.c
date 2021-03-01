@@ -35,7 +35,6 @@ void main(int argc, char* argv[]){
 	while(!feof(inputFile)){
 		printf("shell> ");
 		getline(&s, &size, inputFile);
-		// strcpy(s, "this   is a test  >  hello&hi there>fumd   &");
 		if(feof(inputFile)){
 			printf("\n");
 			break;
@@ -66,14 +65,23 @@ void main(int argc, char* argv[]){
 				strcat(filepath, tokens[0]);
 				printf("filepath: %s\n", filepath);
 				if(access(paths[i], X_OK) == 0){
-					
+					int pid = fork();
+					if(pid == -1){
+						fprintf(stderr, "failed to create child process\n");
+						exit(1);
+					}
+					else if(pid == 0){
+
+					}
+					else{
+						
+					}
 					free(filepath);
 					break;
 				}
 				free(filepath);	
 			}
 		}
-		// break;
 	}
 
 	free(s);
