@@ -3,12 +3,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 char* wstrim(char* s);
 void error();
 char* substr(char* str, int index, int);
 void split(char* str, char**, int*, int);
 void printArray(char** a, int s);
+int contains(char** arr, char* token, int);
 
 void main(int argc, char* argv[]){
 	if(argc >= 3){
@@ -31,7 +33,8 @@ void main(int argc, char* argv[]){
 	paths[0] = malloc(sizeof("/bin"));
 	strcpy(paths[0], "/bin");
 	int numPaths = 1;
-
+	char* ampersand;
+	char* redirect;
 	while(!feof(inputFile)){
 		printf("shell> ");
 		getline(&s, &size, inputFile);
@@ -43,45 +46,99 @@ void main(int argc, char* argv[]){
 		s = wstrim(s);
 		int tokenCount;
 		split(s, tokens, &tokenCount, numSlots);
-		printArray(tokens, tokenCount);
-		//built-in commands
-		if(strcmp(tokens[0], "exit") == 0){
-			break;
-		}
-		else if(strcmp(tokens[0], "cd") == 0){
+		// printArray(tokens, tokenCount);
 
-		}
-		else if(strcmp(tokens[0], "path") == 0){
+		ampersand = (char*) malloc(sizeof(char)*2);
+		redirect = (char*) malloc(sizeof(char)*2);
+		strcpy(ampersand, "&");
+		strcpy(redirect, ">");
+		int contained = contains(tokens, ampersand, tokenCount);
+		int startToken = 0;
+		int endToken = tokenCount-1;
+		// char** command = tokens;
+		// int tc = tokenCount;
+		int* pids = malloc(sizeof(int));
+		int numCommands = 0;
+		int wstatus;
+		int quit = 0;
+		while(startToken != tokenCount){
+			if(contained != -1){
+				endToken = contained-1;
+				numCommands++;
+			}
+			//built-in commands
+			// printf("token: %s\n", tokens[startToken]);
+			if(strcmp(tokens[startToken], "exit") == 0){
+				quit = 1;
+				break;
+			}
+			else if(strcmp(tokens[startToken], "cd") == 0){
 
-		}
-		else if(strcmp(tokens[0], "env") == 0){
+			}
+			else if(strcmp(tokens[startToken], "path") == 0){
 
-		}
-		else {
-			for(int i = 0; i < numPaths; i++){
-				char* filepath = malloc(sizeof(paths[i]) + sizeof(tokens[0]) + 1);
-				strcpy(filepath, paths[i]);
-				strcat(filepath, "/");
-				strcat(filepath, tokens[0]);
-				printf("filepath: %s\n", filepath);
-				if(access(paths[i], X_OK) == 0){
-					int pid = fork();
-					if(pid == -1){
-						fprintf(stderr, "failed to create child process\n");
-						exit(1);
-					}
-					else if(pid == 0){
+			}
+			else if(strcmp(tokens[startToken], "env") == 0){
 
-					}
-					else{
+			}
+			else {
+				//loops thru all paths to find command and breaks out after finding it
+				int found = 0;
+				numCommands++;
+				for(int i = 0; i < numPaths; i++){
+					char* filepath = malloc(sizeof(paths[i]) + sizeof(tokens[0]) + 1);
+					strcpy(filepath, paths[i]);
+					strcat(filepath, "/");
+					strcat(filepath, tokens[0]);
+					// printf("filepath: %s\n", filepath);
+					if(access(filepath, X_OK) == 0){
+						found = 1;
+						int pid = fork();
+						if(pid == -1){
+							fprintf(stderr, "failed to create child process\n");
+							exit(1);
+						}
+						else if(pid == 0){ // child
+							printf("this is child %d\n", getpid());
+							exit(0);
+						}
+						else{
+							if(contained == -1){
+								startToken = tokenCount;
+							}
+							else{
+								// printf("contained: %d, numTokens %d\n", contained,tokenCount);
+								startToken = contained+1;
+								endToken = tokenCount-1;
+								
+								int temp = contains(&tokens[startToken], ampersand, 1 + endToken - startToken);
+								if(temp != -1)
+									contained = startToken + temp;
+								else
+									contained = -1;
+								// printf("new contained %d\n", contained);
+								pids = realloc(pids,numCommands*sizeof(int*));
+								pids[numCommands-1] = pid;
+							}
+						}
+						free(filepath);
 						
+						break;
 					}
-					free(filepath);
-					break;
+					free(filepath);	
 				}
-				free(filepath);	
+				if(!found){
+					error();
+					exit(1);
+				}
 			}
 		}
+		for(int j = 0; j < numCommands; j++)
+			waitpid((pid_t) pids[j], &wstatus, 0);
+		free(pids);
+		printf("parent done\n");
+		if(quit)
+			break;		
 	}
 
 	free(s);
@@ -92,6 +149,8 @@ void main(int argc, char* argv[]){
 		free(paths[i]);
 	}
 	free(paths);
+	free(ampersand);
+	free(redirect);
 	if(argc == 2)
 		fclose(inputFile);
 	exit(0);
@@ -187,3 +246,11 @@ void printArray(char** a, int s){
 	}
 }
 
+int contains(char** arr, char* token, int s){
+	for(int i = 0; i < s; i++){
+		if(strcmp(arr[i], token) == 0){
+			return i;
+		}
+	}
+	return -1;
+}
