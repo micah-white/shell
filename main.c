@@ -21,12 +21,18 @@ void main(int argc, char* argv[]){
 	if(argc == 2)
 		inputFile = fopen(argv[1], "r");
 
+	if(inputFile == NULL){
+		error();
+		exit(1);
+	}
+
 	char* s = (char*) malloc(sizeof(char)*100);
 	size_t size = sizeof(char)*100;
 	int numSlots = 15;
 	char** tokens = (char**) malloc(sizeof(char*) * numSlots);
 	for(int i = 0; i < numSlots; i++){
 		tokens[i] = (char*) malloc(sizeof(char) * 50);
+		strcpy(tokens[i], "\0");
 	}
 
 	char** paths = malloc(sizeof(char*));
@@ -38,10 +44,13 @@ void main(int argc, char* argv[]){
 	while(!feof(inputFile)){
 		printf("shell> ");
 		getline(&s, &size, inputFile);
-		if(feof(inputFile)){
-			printf("\n");
+		// printf("hey: \"%s\"\n", s);
+		// printf("hello?\n");
+		if(feof(inputFile) && strlen(s) == 0){
+			printf("end\n");
 			break;
 		}
+		// printf("hello?\n");
 		FILE* outputFile = stdout;
 		s = wstrim(s);
 		int tokenCount;
@@ -64,7 +73,7 @@ void main(int argc, char* argv[]){
 		while(startToken != tokenCount){
 			if(contained != -1){
 				endToken = contained-1;
-				numCommands++;
+				// numCommands++;
 			}
 			//built-in commands
 			// printf("token: %s\n", tokens[startToken]);
@@ -93,6 +102,17 @@ void main(int argc, char* argv[]){
 					// printf("filepath: %s\n", filepath);
 					if(access(filepath, X_OK) == 0){
 						found = 1;
+						//setting up args
+						int numArgs = endToken-startToken;
+						char nil[] = {'\0'};
+						char** args = (char**) malloc(sizeof(char*) * (numArgs+1));
+						for(int j = 0; j < numArgs; j++){
+							args[j] = malloc(sizeof(tokens[1+j+startToken]));
+							args[j] = tokens[1+j+startToken];
+						}
+						args[numArgs] = malloc(sizeof(char)*2);
+						strcpy(args[numArgs], nil);
+
 						int pid = fork();
 						if(pid == -1){
 							fprintf(stderr, "failed to create child process\n");
@@ -100,11 +120,13 @@ void main(int argc, char* argv[]){
 						}
 						else if(pid == 0){ // child
 							printf("this is child %d\n", getpid());
+							execv(filepath, args);
 							exit(0);
 						}
 						else{
 							if(contained == -1){
 								startToken = tokenCount;
+								waitpid((pid_t) pid, &wstatus, 0);
 							}
 							else{
 								// printf("contained: %d, numTokens %d\n", contained,tokenCount);
@@ -120,6 +142,9 @@ void main(int argc, char* argv[]){
 								pids = realloc(pids,numCommands*sizeof(int*));
 								pids[numCommands-1] = pid;
 							}
+							for(int k = 0; k < numArgs + 1; k++)
+								free(args[k]);
+							free(args);
 						}
 						free(filepath);
 						
@@ -175,7 +200,6 @@ char* wstrim(char* s){
 
 void error(){
 	fprintf(stderr, "An error has occurred\n");
-	exit(1);
 }
 
 void split(char* str, char** arr, int* c, int s){
