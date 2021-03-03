@@ -103,15 +103,17 @@ void main(int argc, char* argv[]){
 					if(access(filepath, X_OK) == 0){
 						found = 1;
 						//setting up args
-						int numArgs = endToken-startToken;
-						char nil[] = {'\0'};
-						char** args = (char**) malloc(sizeof(char*) * (numArgs+1));
-						for(int j = 0; j < numArgs; j++){
-							args[j] = malloc(sizeof(tokens[1+j+startToken]));
-							args[j] = tokens[1+j+startToken];
+						int numArgs = endToken-startToken+1;
+						// printf("numargs %d, startToken: %d, endToken %d\n", numArgs, startToken, endToken);
+						char* args[numArgs+1];
+						args[0] = tokens[0];
+						for(int j = 1; j < numArgs; j++){
+							args[j] = tokens[j+startToken];
 						}
-						args[numArgs] = malloc(sizeof(char)*2);
-						strcpy(args[numArgs], nil);
+						args[numArgs] = NULL;
+						// strcpy(args[numArgs], nil);
+						// printArray(tokens, tokenCount);
+						// printArray(&args, numArgs);
 
 						int pid = fork();
 						if(pid == -1){
@@ -142,9 +144,9 @@ void main(int argc, char* argv[]){
 								pids = realloc(pids,numCommands*sizeof(int*));
 								pids[numCommands-1] = pid;
 							}
-							for(int k = 0; k < numArgs + 1; k++)
-								free(args[k]);
-							free(args);
+							// for(int k = 0; k < numArgs + 1; k++)
+							// 	free(args[k]);
+							// free(args);
 						}
 						free(filepath);
 						
@@ -161,7 +163,7 @@ void main(int argc, char* argv[]){
 		for(int j = 0; j < numCommands; j++)
 			waitpid((pid_t) pids[j], &wstatus, 0);
 		free(pids);
-		printf("parent done\n");
+		// printf("parent done\n");
 		if(quit)
 			break;		
 	}
