@@ -42,17 +42,18 @@ void main(int argc, char* argv[]){
 	char* ampersand;
 	char* redirect;
 	while(!feof(inputFile)){
-		printf("shell> ");
+		if(inputFile == stdin)
+			printf("shell> ");
 		getline(&s, &size, inputFile);
 		// printf("hey: \"%s\"\n", s);
 		// printf("hello?\n");
-		if(feof(inputFile) && strlen(s) == 0){
-			printf("end\n");
-			break;
-		}
+		
 		// printf("hello?\n");
 		FILE* outputFile = stdout;
 		s = wstrim(s);
+		if(feof(inputFile)){
+			break;
+		}
 		int tokenCount;
 		split(s, tokens, &tokenCount, numSlots);
 		// printArray(tokens, tokenCount);
@@ -70,13 +71,14 @@ void main(int argc, char* argv[]){
 		int numCommands = 0;
 		int wstatus;
 		int quit = 0;
-		while(startToken != tokenCount){
+		int errorFound = 0;
+		while(startToken != tokenCount && !errorFound){
 			if(contained != -1){
 				endToken = contained-1;
 				// numCommands++;
 			}
 			//built-in commands
-			// printf("token: %s\n", tokens[startToken]);
+			//printf("token: %s\n", tokens[startToken]);
 			if(strcmp(tokens[startToken], "exit") == 0){
 				quit = 1;
 				break;
@@ -121,7 +123,7 @@ void main(int argc, char* argv[]){
 							exit(1);
 						}
 						else if(pid == 0){ // child
-							printf("this is child %d\n", getpid());
+							// printf("this is child %d\n", getpid());
 							execv(filepath, args);
 							exit(0);
 						}
@@ -156,7 +158,8 @@ void main(int argc, char* argv[]){
 				}
 				if(!found){
 					error();
-					exit(1);
+					errorFound = 1;
+					// exit(1);
 				}
 			}
 		}
@@ -236,7 +239,7 @@ void split(char* str, char** arr, int* c, int s){
 			free(sub);
 		}
 		else if( count > s){
-			printf("tried to save more strings than there is space\n");
+			fprintf(stderr, "tried to save more strings than there is space\n");
 			return;
 		}
 	}
