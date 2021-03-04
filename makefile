@@ -2,7 +2,7 @@ EXEC = shell
 FILE = testfile.txt
 
 shell: main.c
-	gcc main.c -o shell
+	gcc main.c -g -o shell
 
 clean:
 	rm *.o shell
@@ -14,4 +14,4 @@ file: shell
 	./shell $(FILE)
 
 valgrind: shell
-	valgrind -s --leak-check=full --show-leak-kinds=all --track-origins=yes ./shell $(FILE)	
+	valgrind -s --leak-check=full --show-leak-kinds=all --track-origins=yes ./shell

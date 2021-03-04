@@ -39,29 +39,26 @@ void main(int argc, char* argv[]){
 	paths[0] = malloc(sizeof("/bin"));
 	strcpy(paths[0], "/bin");
 	int numPaths = 1;
-	char* ampersand;
-	char* redirect;
+	char* ampersand = (char*) malloc(sizeof(char)*2);
+	char* redirect = (char*) malloc(sizeof(char)*2);
+	strcpy(ampersand, "&");
+	strcpy(redirect, ">");
 	while(!feof(inputFile)){
 		if(inputFile == stdin)
 			printf("shell> ");
 		getline(&s, &size, inputFile);
-		// printf("hey: \"%s\"\n", s);
-		// printf("hello?\n");
-		
-		// printf("hello?\n");
-		FILE* outputFile = stdout;
-		s = wstrim(s);
 		if(feof(inputFile)){
 			break;
 		}
+		// printf("hey: \"%s\"\n", s);
+		// printf("hello?\n");
+		FILE* outputFile = stdout;
+		s = wstrim(s);
+		
 		int tokenCount;
 		split(s, tokens, &tokenCount, numSlots);
 		// printArray(tokens, tokenCount);
-
-		ampersand = (char*) malloc(sizeof(char)*2);
-		redirect = (char*) malloc(sizeof(char)*2);
-		strcpy(ampersand, "&");
-		strcpy(redirect, ">");
+		
 		int contained = contains(tokens, ampersand, tokenCount);
 		int startToken = 0;
 		int endToken = tokenCount-1;
@@ -73,6 +70,8 @@ void main(int argc, char* argv[]){
 		int quit = 0;
 		int errorFound = 0;
 		while(startToken != tokenCount && !errorFound){
+			if(strlen(tokens[0]) == 0)
+				break;
 			if(contained != -1){
 				endToken = contained-1;
 				// numCommands++;
@@ -108,8 +107,10 @@ void main(int argc, char* argv[]){
 						//setting up args
 						int numArgs = endToken-startToken+1;
 						// printf("numargs %d, startToken: %d, endToken %d\n", numArgs, startToken, endToken);
+						
+						//args freed because all tokens
 						char* args[numArgs+1];
-						args[0] = tokens[0];
+						args[0] = tokens[startToken];
 						for(int j = 1; j < numArgs; j++){
 							args[j] = tokens[j+startToken];
 						}
@@ -131,6 +132,8 @@ void main(int argc, char* argv[]){
 						else{
 							if(contained == -1){
 								startToken = tokenCount;
+								pids = realloc(pids,numCommands*sizeof(int*));
+								pids[numCommands-1] = pid;
 								waitpid((pid_t) pid, &wstatus, 0);
 							}
 							else{
@@ -161,14 +164,18 @@ void main(int argc, char* argv[]){
 				}
 			}
 		}
-		printf("numCommands %d\n", numCommands);
-		for(int j = 0; j < numCommands; j++)
+		// printf("numCommands %d\n", numCommands);
+		for(int j = 0; j < numCommands; j++){
 			waitpid((pid_t) pids[j], &wstatus, 0);
+		}	
 		free(pids);
+		
 		// printf("parent done\n");
 		if(quit)
 			break;		
 	}
+	free(ampersand);
+	free(redirect);
 
 	free(s);
 	for(int i = 0; i < numSlots; i++)
@@ -178,8 +185,8 @@ void main(int argc, char* argv[]){
 		free(paths[i]);
 	}
 	free(paths);
-	free(ampersand);
-	free(redirect);
+	// free(ampersand);
+	// free(redirect);
 	if(argc == 2)
 		fclose(inputFile);
 	exit(0);
