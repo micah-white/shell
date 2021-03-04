@@ -91,7 +91,16 @@ void main(int argc, char* argv[]){
 					error();
 			}
 			else if(strcmp(tokens[startToken], "path") == 0){
-
+				int numArgs = endToken - startToken;
+				for(int i = 0;i < numPaths; i++)
+					free(paths[i]);
+				numPaths = numArgs;
+				paths = (char**) realloc(paths, sizeof(char*) * numArgs);
+				for(int i = 0; i < numArgs; i++){
+					printf("huh? \"%s\"\n", tokens[i+startToken+1]);
+					paths[i] = (char*) malloc(sizeof(char) * strlen(tokens[i+startToken+1]) + 1);
+					strcpy(paths[i], tokens[i+startToken+1]);
+				}
 			}
 			else if(strcmp(tokens[startToken], "env") == 0){
 
@@ -183,7 +192,6 @@ void main(int argc, char* argv[]){
 	}
 	free(ampersand);
 	free(redirect);
-
 	free(s);
 	for(int i = 0; i < numSlots; i++)
 		free(tokens[i]);
@@ -192,8 +200,6 @@ void main(int argc, char* argv[]){
 		free(paths[i]);
 	}
 	free(paths);
-	// free(ampersand);
-	// free(redirect);
 	if(argc == 2)
 		fclose(inputFile);
 	exit(0);
