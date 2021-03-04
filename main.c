@@ -112,6 +112,12 @@ void main(int argc, char* argv[]){
 						temp_str = *(environ+i);
 					}
 				}
+				else if(endToken-startToken == 1){
+					int r = putenv(tokens[startToken+1]);
+					if(r != 0){
+						error();
+					}
+				}
 			}
 			else {
 				//loops thru all paths to find command and breaks out after finding it
