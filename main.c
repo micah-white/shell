@@ -105,18 +105,26 @@ void main(int argc, char* argv[]){
 				}
 			}
 			else if(strcmp(tokens[startToken], "env") == 0){
-				if(endToken == startToken){ // print all environment variables
+				int numArgs = endToken - startToken;
+				if(numArgs == 0){ // print all environment variables
 					char* temp_str = *environ;
 					for(int i = 1; temp_str; i++){
 						printf("%s\n", temp_str);
 						temp_str = *(environ+i);
 					}
 				}
-				else if(endToken-startToken == 1){
+				else if(numArgs == 1){
 					int r = putenv(tokens[startToken+1]);
-					if(r != 0){
+					if(r != 0)
 						error();
-					}
+				}
+				else if(strcmp(tokens[startToken+1], "-d") == 0 && numArgs == 2){
+					int r = unsetenv(tokens[startToken+2]);
+					if(r != 0)
+						error();
+				}
+				else{
+					error();
 				}
 			}
 			else {
