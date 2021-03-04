@@ -95,7 +95,7 @@ void main(int argc, char* argv[]){
 			else {
 				//loops thru all paths to find command and breaks out after finding it
 				int found = 0;
-				numCommands++;
+				
 				for(int i = 0; i < numPaths; i++){
 					char* filepath = malloc(sizeof(paths[i]) + sizeof(tokens[0]) + 1);
 					strcpy(filepath, paths[i]);
@@ -103,6 +103,7 @@ void main(int argc, char* argv[]){
 					strcat(filepath, tokens[0]);
 					// printf("filepath: %s\n", filepath);
 					if(access(filepath, X_OK) == 0){
+						numCommands++;
 						found = 1;
 						//setting up args
 						int numArgs = endToken-startToken+1;
@@ -146,9 +147,6 @@ void main(int argc, char* argv[]){
 								pids = realloc(pids,numCommands*sizeof(int*));
 								pids[numCommands-1] = pid;
 							}
-							// for(int k = 0; k < numArgs + 1; k++)
-							// 	free(args[k]);
-							// free(args);
 						}
 						free(filepath);
 						
@@ -163,6 +161,7 @@ void main(int argc, char* argv[]){
 				}
 			}
 		}
+		printf("numCommands %d\n", numCommands);
 		for(int j = 0; j < numCommands; j++)
 			waitpid((pid_t) pids[j], &wstatus, 0);
 		free(pids);
