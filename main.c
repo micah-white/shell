@@ -97,7 +97,7 @@ void main(int argc, char* argv[]){
 				numPaths = numArgs;
 				paths = (char**) realloc(paths, sizeof(char*) * numArgs);
 				for(int i = 0; i < numArgs; i++){
-					printf("huh? \"%s\"\n", tokens[i+startToken+1]);
+					// printf("huh? \"%s\"\n", tokens[i+startToken+1]);
 					paths[i] = (char*) malloc(sizeof(char) * strlen(tokens[i+startToken+1]) + 1);
 					strcpy(paths[i], tokens[i+startToken+1]);
 				}
@@ -110,10 +110,12 @@ void main(int argc, char* argv[]){
 				int found = 0;
 				
 				for(int i = 0; i < numPaths; i++){
-					char* filepath = malloc(sizeof(paths[i]) + sizeof(tokens[0]) + 1);
+					char* filepath = malloc(sizeof(char)*strlen(paths[i]) + sizeof(char) * (strlen(tokens[startToken])+2));
+					// printf("numPaths, %d i %d\n", numPaths, i);
 					strcpy(filepath, paths[i]);
 					strcat(filepath, "/");
-					strcat(filepath, tokens[0]);
+					strcat(filepath, tokens[startToken]);
+					// printf("hello\n");
 					// printf("filepath: %s\n", filepath);
 					if(access(filepath, X_OK) == 0){
 						numCommands++;

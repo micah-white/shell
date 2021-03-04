@@ -2,5 +2,5 @@ ls
 path
 ls
 path /bin /bin/usr /home/micah/shell
-shell exitfile.txt
+shell
 exit
