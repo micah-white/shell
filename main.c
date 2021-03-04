@@ -12,6 +12,8 @@ void split(char* str, char**, int*, int);
 void printArray(char** a, int s);
 int contains(char** arr, char* token, int);
 
+extern char **environ;
+
 void main(int argc, char* argv[]){
 	if(argc >= 3){
 		error();
@@ -103,7 +105,13 @@ void main(int argc, char* argv[]){
 				}
 			}
 			else if(strcmp(tokens[startToken], "env") == 0){
-
+				if(endToken == startToken){ // print all environment variables
+					char* temp_str = *environ;
+					for(int i = 1; temp_str; i++){
+						printf("%s\n", temp_str);
+						temp_str = *(environ+i);
+					}
+				}
 			}
 			else {
 				//loops thru all paths to find command and breaks out after finding it
@@ -111,11 +119,9 @@ void main(int argc, char* argv[]){
 				
 				for(int i = 0; i < numPaths; i++){
 					char* filepath = malloc(sizeof(char)*strlen(paths[i]) + sizeof(char) * (strlen(tokens[startToken])+2));
-					// printf("numPaths, %d i %d\n", numPaths, i);
 					strcpy(filepath, paths[i]);
 					strcat(filepath, "/");
 					strcat(filepath, tokens[startToken]);
-					// printf("hello\n");
 					// printf("filepath: %s\n", filepath);
 					if(access(filepath, X_OK) == 0){
 						numCommands++;
