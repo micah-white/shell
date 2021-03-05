@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 char* wstrim(char* s);
 void error();
@@ -54,7 +55,7 @@ void main(int argc, char* argv[]){
 		}
 		// printf("hey: \"%s\"\n", s);
 		// printf("hello?\n");
-		FILE* outputFile = stdout;
+		// FILE* outputFile = stdout;
 		s = wstrim(s);
 		
 		int tokenCount;
@@ -71,13 +72,21 @@ void main(int argc, char* argv[]){
 		int wstatus;
 		int quit = 0;
 		int errorFound = 0;
+		//pipe
 		while(startToken != tokenCount && !errorFound){
-			if(strlen(tokens[0]) == 0)
+			if(strlen(tokens[startToken]) == 0)
 				break;
 			if(containsAmpersand != -1){
 				endToken = containsAmpersand-1;
-				// numCommands++;
 			}
+			int redirected = 0;
+			char* outputFileName = NULL;
+			if(contains(&tokens[startToken], redirect, endToken-startToken+1)){
+				outputFileName = tokens[endToken];
+				redirected = 1;
+				endToken -= 2;
+			}
+
 			//built-in commands
 			//printf("token: %s\n", tokens[startToken]);
 			if(strcmp(tokens[startToken], "exit") == 0){
@@ -160,12 +169,19 @@ void main(int argc, char* argv[]){
 							fprintf(stderr, "failed to create child process\n");
 							exit(1);
 						}
-						else if(pid == 0){ // child
+						else if(pid == 0){ 	// child
 							// printf("this is child %d\n", getpid());
+							if(redirected){
+								int file = open(outputFileName, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+								dup2(file, STDERR_FILENO);
+								dup2(file, STDOUT_FILENO);
+								close(file);
+							}
+
 							execv(filepath, args);
 							exit(0);
 						}
-						else{
+						else{				//parent
 							if(containsAmpersand == -1){
 								pids = realloc(pids,numCommands*sizeof(int*));
 								pids[numCommands-1] = pid;
