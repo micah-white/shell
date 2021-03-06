@@ -81,7 +81,7 @@ void main(int argc, char* argv[]){
 			}
 			int redirected = 0;
 			char* outputFileName = NULL;
-			if(contains(&tokens[startToken], redirect, endToken-startToken+1)){
+			if(contains(&tokens[startToken], redirect, endToken-startToken+1) > -1){
 				outputFileName = tokens[endToken];
 				redirected = 1;
 				endToken -= 2;
@@ -171,7 +171,7 @@ void main(int argc, char* argv[]){
 						}
 						else if(pid == 0){ 	// child
 							// printf("this is child %d\n", getpid());
-							if(redirected){
+							if(redirected == 1){
 								int file = open(outputFileName, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 								dup2(file, STDERR_FILENO);
 								dup2(file, STDOUT_FILENO);
@@ -333,6 +333,7 @@ void printArray(char** a, int s){
 }
 
 int contains(char** arr, char* token, int s){
+	
 	for(int i = 0; i < s; i++){
 		if(strcmp(arr[i], token) == 0){
 			return i;
