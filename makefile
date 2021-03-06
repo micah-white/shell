@@ -2,10 +2,10 @@ EXEC = shell
 FILE = testfile.txt
 
 shell: main.c
-	gcc main.c -g -o shell
+	gcc main.c -o shell
 
 clean:
-	rm *.o shell
+	rm $(EXEC)
 
 test: shell
 	./shell

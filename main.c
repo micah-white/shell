@@ -53,20 +53,15 @@ void main(int argc, char* argv[]){
 		if(feof(inputFile)){
 			break;
 		}
-		// printf("hey: \"%s\"\n", s);
-		// printf("hello?\n");
-		// FILE* outputFile = stdout;
+
 		s = wstrim(s);
 		
 		int tokenCount;
 		split(s, tokens, &tokenCount, numSlots);
-		// printArray(tokens, tokenCount);
 		
 		int containsAmpersand = contains(tokens, ampersand, tokenCount);
 		int startToken = 0;
 		int endToken = tokenCount-1;
-		// char** command = tokens;
-		// int tc = tokenCount;
 		int* pids = malloc(sizeof(int));
 		int numCommands = 0;
 		int wstatus;
@@ -88,7 +83,6 @@ void main(int argc, char* argv[]){
 			}
 
 			//built-in commands
-			//printf("token: %s\n", tokens[startToken]);
 			if(strcmp(tokens[startToken], "exit") == 0){
 				quit = 1;
 				break;
@@ -108,7 +102,6 @@ void main(int argc, char* argv[]){
 				numPaths = numArgs;
 				paths = (char**) realloc(paths, sizeof(char*) * numArgs);
 				for(int i = 0; i < numArgs; i++){
-					// printf("huh? \"%s\"\n", tokens[i+startToken+1]);
 					paths[i] = (char*) malloc(sizeof(char) * strlen(tokens[i+startToken+1]) + 1);
 					strcpy(paths[i], tokens[i+startToken+1]);
 				}
@@ -145,13 +138,11 @@ void main(int argc, char* argv[]){
 					strcpy(filepath, paths[i]);
 					strcat(filepath, "/");
 					strcat(filepath, tokens[startToken]);
-					// printf("filepath: %s\n", filepath);
 					if(access(filepath, X_OK) == 0){
 						numCommands++;
 						found = 1;
 						//setting up args
 						int numArgs = endToken-startToken+1;
-						// printf("numargs %d, startToken: %d, endToken %d\n", numArgs, startToken, endToken);
 						
 						//args freed because it only copies pointers from tokens
 						char* args[numArgs+1];
@@ -160,9 +151,6 @@ void main(int argc, char* argv[]){
 							args[j] = tokens[j+startToken];
 						}
 						args[numArgs] = NULL;
-						// strcpy(args[numArgs], nil);
-						// printArray(tokens, tokenCount);
-						// printArray(&args, numArgs);
 
 						int pid = fork();
 						if(pid == -1){
@@ -170,7 +158,6 @@ void main(int argc, char* argv[]){
 							exit(1);
 						}
 						else if(pid == 0){ 	// child
-							// printf("this is child %d\n", getpid());
 							if(redirected == 1){
 								int file = open(outputFileName, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
 								dup2(file, STDERR_FILENO);
@@ -202,7 +189,6 @@ void main(int argc, char* argv[]){
 				if(!found){
 					error();
 					errorFound = 1;
-					// exit(1);
 				}
 			}
 			if(containsAmpersand == -1){
@@ -218,13 +204,11 @@ void main(int argc, char* argv[]){
 					containsAmpersand = -1;
 			}
 		}
-		// printf("numCommands %d\n", numCommands);
 		for(int j = 0; j < numCommands; j++){
 			waitpid((pid_t) pids[j], &wstatus, 0);
 		}	
 		free(pids);
 		
-		// printf("parent done\n");
 		if(quit)
 			break;		
 	}
@@ -252,11 +236,14 @@ void shiftDown(char* s){
 }
 
 char* wstrim(char* s){
+	printf("ws: %s\n", s);
 	while(isspace(s[0])){
 		shiftDown(s);
 	}
-	while(isspace(s[strlen(s)-1]))
-		s[strlen(s)-1] = '\0';
+	if(strlen(s) > 0){
+		while(isspace(s[strlen(s)-1]))
+			s[strlen(s)-1] = '\0';
+	}
 	return s;
 }
 
