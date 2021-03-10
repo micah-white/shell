@@ -59,7 +59,7 @@ void main(int argc, char* argv[]){
 		int tokenCount;
 		split(s, tokens, &tokenCount, numSlots);
 		
-		int containsAmpersand = contains(tokens, ampersand, tokenCount);
+		int ampersandIndex = contains(tokens, ampersand, tokenCount);
 		int startToken = 0;
 		int endToken = tokenCount-1;
 		int* pids = malloc(sizeof(int));
@@ -71,8 +71,8 @@ void main(int argc, char* argv[]){
 		while(startToken != tokenCount && !errorFound){
 			if(strlen(tokens[startToken]) == 0)
 				break;
-			if(containsAmpersand != -1){
-				endToken = containsAmpersand-1;
+			if(ampersandIndex != -1){
+				endToken = ampersandIndex-1;
 			}
 			int redirected = 0;
 			char* outputFileName = NULL;
@@ -169,7 +169,7 @@ void main(int argc, char* argv[]){
 							exit(0);
 						}
 						else{				//parent
-							if(containsAmpersand == -1){
+							if(ampersandIndex == -1){
 								pids = realloc(pids,numCommands*sizeof(int*));
 								pids[numCommands-1] = pid;
 								waitpid((pid_t) pid, &wstatus, 0);
@@ -191,17 +191,17 @@ void main(int argc, char* argv[]){
 					errorFound = 1;
 				}
 			}
-			if(containsAmpersand == -1){
+			if(ampersandIndex == -1){
 				startToken = tokenCount;
 			}
 			else{
-				startToken = containsAmpersand+1;
+				startToken = ampersandIndex+1;
 				endToken = tokenCount-1;
 				int temp = contains(&tokens[startToken], ampersand, 1 + endToken - startToken);
 				if(temp != -1)
-					containsAmpersand = startToken + temp;
+					ampersandIndex = startToken + temp;
 				else
-					containsAmpersand = -1;
+					ampersandIndex = -1;
 			}
 		}
 		for(int j = 0; j < numCommands; j++){
