@@ -2,7 +2,7 @@ EXEC = shell
 FILE = testfile.txt
 
 shell: main.c
-	gcc main.c -o shell
+	gcc main.c -D_GNU_SOURCE -std=c99 -o shell
 
 clean:
 	rm $(EXEC)
