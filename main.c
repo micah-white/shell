@@ -236,7 +236,6 @@ void shiftDown(char* s){
 }
 
 char* wstrim(char* s){
-	printf("ws: %s\n", s);
 	while(isspace(s[0])){
 		shiftDown(s);
 	}
